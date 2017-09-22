@@ -46,7 +46,7 @@ void Visualizer::drawElement(QPainter& p, QString entity, int width, double heig
     qDebug() << this->tick_number;
     foreach(const QJsonValue & element, elevators){
         int el_x = element.toObject()["x"].toInt();
-        int el_y = element.toObject()["y"].toDouble();
+        double el_y = element.toObject()["y"].toDouble();
         int el_state = element.toObject()["state"].toInt();
         QString el_type = element.toObject()["type"].toString();;
 
@@ -59,7 +59,7 @@ void Visualizer::drawElement(QPainter& p, QString entity, int width, double heig
 #define EL_WIDTH (width / 2)
 #define EL_HEIGHT (floor_height * height)
 
-        p.drawRect(TR_X(el_x - EL_WIDTH), rect().bottom() - el_y * floor_height + floor_height - EL_HEIGHT - 3, EL_WIDTH * 2, EL_HEIGHT);
+        p.drawRect(TR_X(el_x - EL_WIDTH), rect().bottom() - el_y * (float)floor_height + floor_height - EL_HEIGHT - 3, EL_WIDTH * 2, EL_HEIGHT);
     }
 }
 
