@@ -24,6 +24,8 @@ public:
 
     QJsonParseError reparseReplay();
 
+    int getSpeed();
+
 private slots:
     void on_startstop_clicked();
     void slotTimerAlarm();
@@ -31,6 +33,10 @@ private slots:
     void on_browse_clicked();
 
     void on_reset_clicked();
+
+    void on_speed_sliderMoved(int position);
+
+    void on_speedSlider_actionTriggered(int action);
 
 private:
     Ui::MainWindow *ui;
@@ -41,6 +47,7 @@ private:
     int tick_index;
 
     QString filename;
+    int speed;
 };
 
 #endif // MAINWINDOW_H
