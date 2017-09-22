@@ -38,6 +38,8 @@ private slots:
 
     void on_speedSlider_actionTriggered(int action);
 
+    void on_ticksSlider_actionTriggered(int action);
+
 private:
     Ui::MainWindow *ui;
     Visualizer * vis;
@@ -48,6 +50,7 @@ private:
 
     QString filename;
     int speed;
+    bool manualTick;
 };
 
 #endif // MAINWINDOW_H

@@ -26,6 +26,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(timer, SIGNAL(timeout()), this, SLOT(slotTimerAlarm()));
     filename = "game.js";
     tick_index = 0;
+    manualTick = false;
+    speed = 1;
 
     this->preConfig();
 }
@@ -47,6 +49,10 @@ QJsonParseError MainWindow::reparseReplay()
     QCoreApplication::processEvents();
     QJsonParseError qerr;
     jsongame = QJsonDocument::fromJson(gamedump.toUtf8(), &qerr);
+
+    ticks = jsongame.object()["game_data"].toArray();
+    ui->ticksSlider->setMaximum(ticks.size());
+    ui->counter->setText(QString::number(0) + "/" + QString::number(ticks.size()));
 
     progress->setValue(100);
     QCoreApplication::processEvents();
@@ -85,7 +91,11 @@ void MainWindow::slotTimerAlarm()
 
         this->vis->setTick(tick_index, ticks.at(tick_index));
         this->vis->repaint();
-        tick_index++;
+        ui->counter->setText(QString::number(tick_index) + "/" + QString::number(ticks.size()));
+        if (!manualTick){
+            tick_index++;
+            ui->ticksSlider->setValue(tick_index);
+        }
     }
 }
 
@@ -139,8 +149,6 @@ void MainWindow::on_speed_sliderMoved(int position)
 int MainWindow::getSpeed()
 {
     speed = ui->speedSlider->value();
-    /*if (speed < 10)
-        speed = 0;*/
 
     return speed;
 }
@@ -149,4 +157,16 @@ void MainWindow::on_speedSlider_actionTriggered(int action)
 {
     int speed = getSpeed();
     this->timer->setInterval(speed);
+}
+
+void MainWindow::on_ticksSlider_actionTriggered(int action)
+{
+    int new_tick = ui->ticksSlider->value();
+    if (this->timer->isActive()){
+        this->timer->stop();
+    }
+    tick_index = new_tick;
+    manualTick = true;
+    slotTimerAlarm();
+    manualTick = false;
 }
