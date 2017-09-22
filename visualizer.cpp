@@ -43,7 +43,6 @@ void Visualizer::drawElement(QPainter& p, QString entity, int width, double heig
     int floor_height = rect().bottom() / this->config->floors_count;
 
     QJsonArray elevators = tick->toObject()[entity].toArray();
-    qDebug() << this->tick_number;
     foreach(const QJsonValue & element, elevators){
         int el_x = element.toObject()["x"].toInt();
         double el_y = element.toObject()["y"].toDouble();

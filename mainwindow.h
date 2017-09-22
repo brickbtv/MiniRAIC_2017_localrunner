@@ -20,11 +20,17 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-    void MainLoop();
+    void preConfig();
+
+    QJsonParseError reparseReplay();
 
 private slots:
-    void on_pushButton_clicked();
+    void on_startstop_clicked();
     void slotTimerAlarm();
+
+    void on_browse_clicked();
+
+    void on_reset_clicked();
 
 private:
     Ui::MainWindow *ui;
@@ -33,6 +39,8 @@ private:
     QJsonDocument jsongame;
     QJsonArray ticks;
     int tick_index;
+
+    QString filename;
 };
 
 #endif // MAINWINDOW_H
