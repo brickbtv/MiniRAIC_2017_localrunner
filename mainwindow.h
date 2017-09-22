@@ -3,7 +3,10 @@
 
 #include "visualizer.h"
 
+#include <QJsonArray>
+#include <QJsonDocument>
 #include <QMainWindow>
+#include <QTimer>
 
 namespace Ui {
 class MainWindow;
@@ -21,10 +24,15 @@ public:
 
 private slots:
     void on_pushButton_clicked();
+    void slotTimerAlarm();
 
 private:
     Ui::MainWindow *ui;
     Visualizer * vis;
+    QTimer *timer;
+    QJsonDocument jsongame;
+    QJsonArray ticks;
+    int tick_index;
 };
 
 #endif // MAINWINDOW_H

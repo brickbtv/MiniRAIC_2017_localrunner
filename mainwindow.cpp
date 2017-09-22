@@ -10,7 +10,7 @@
 #include <QTimer>
 #include <QTime>
 
-QString filename = "game_med.js";
+QString filename = "game.js";
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -19,6 +19,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     ui->frame->layout()->removeWidget(ui->openGLWidget);
     delete ui->openGLWidget;
+    timer = new QTimer();
+    connect(timer, SIGNAL(timeout()), this, SLOT(slotTimerAlarm()));
 
     this->MainLoop();
 }
@@ -30,7 +32,7 @@ void MainWindow::MainLoop(){
     file.close();
 
     QJsonParseError qerr;
-    QJsonDocument jsongame = QJsonDocument::fromJson(gamedump.toUtf8(), &qerr);
+    jsongame = QJsonDocument::fromJson(gamedump.toUtf8(), &qerr);
     if (jsongame.isNull() || jsongame.isEmpty())
         qDebug() << qerr.errorString();
     else {
@@ -44,6 +46,17 @@ void MainWindow::MainLoop(){
     }
 }
 
+void MainWindow::slotTimerAlarm()
+{
+    if (tick_index >= ticks.size()){
+        timer->stop();
+        return;
+    }
+    this->vis->setTick(tick_index, ticks.at(tick_index));
+    this->vis->repaint();
+    tick_index++;
+}
+
 MainWindow::~MainWindow()
 {
     delete ui;
@@ -51,23 +64,12 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_pushButton_clicked()
 {
-    QFile file(filename);
-    file.open(QIODevice::ReadOnly | QIODevice::Text);
-    QString gamedump = file.readAll();
-    file.close();
+    QJsonObject obj = jsongame.object();
+    ticks = obj["game_data"].toArray();
 
-    QJsonParseError qerr;
-    QJsonDocument jsongame = QJsonDocument::fromJson(gamedump.toUtf8(), &qerr);
-    if (jsongame.isNull() || jsongame.isEmpty())
-        qDebug() << qerr.errorString();
-    else {
-        QJsonObject obj = jsongame.object();
-        QJsonArray ticks = obj["game_data"].toArray();
-        int tick_index = 0;
-        foreach(const QJsonValue & tick, ticks) {
-            this->vis->setTick(tick_index++, tick);
-            this->vis->repaint();
-            Sleep(10);
-        }
-    }
+    if ( ! timer->isActive()){
+        tick_index = 0;
+        timer->start(10);
+    } else
+        timer->stop();
 }
