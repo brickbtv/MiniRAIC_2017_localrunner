@@ -18,6 +18,10 @@ void Visualizer::setTick(int tick_number, const QJsonValue & tick) {
     this->tick_number = tick_number;
 }
 
+#define TR_X(x) ((canvas_center + x))
+#define EL_WIDTH (width / 2)
+#define EL_HEIGHT (floor_height * height)
+
 void Visualizer::drawBackground(QPainter& p){
     int canvas_center = rect().right() / 2;
     int floor_height = rect().bottom() / this->config->floors_count;
@@ -36,6 +40,12 @@ void Visualizer::drawBackground(QPainter& p){
         int curr_floor_pos = rect().bottom() - (i - 1) * floor_height;
         p.drawLine(0, curr_floor_pos, rect().right(), curr_floor_pos);
     }
+
+    // ladder
+    p.setPen(Qt::white);
+    int ladder_with_offset = config->ladder_position - 30;
+    p.drawLine(TR_X(ladder_with_offset), 0, TR_X(ladder_with_offset), rect().bottom());
+    p.drawLine(TR_X(-ladder_with_offset), 0, TR_X(-ladder_with_offset), rect().bottom());
 }
 
 void Visualizer::drawElement(QPainter& p, QString entity, int width, double height){
@@ -43,6 +53,7 @@ void Visualizer::drawElement(QPainter& p, QString entity, int width, double heig
     int floor_height = rect().bottom() / this->config->floors_count;
 
     QJsonArray elevators = tick->toObject()[entity].toArray();
+    QMap<QString, int> counter;
     foreach(const QJsonValue & element, elevators){
         int el_x = element.toObject()["x"].toInt();
         double el_y = element.toObject()["y"].toDouble();
@@ -54,12 +65,41 @@ void Visualizer::drawElement(QPainter& p, QString entity, int width, double heig
         else
             p.setPen(Qt::blue);
 
-#define TR_X(x) (canvas_center + x)
-#define EL_WIDTH (width / 2)
-#define EL_HEIGHT (floor_height * height)
+        p.drawRect(TR_X(el_x - EL_WIDTH),
+                   rect().bottom() - el_y * (float)floor_height + floor_height - EL_HEIGHT - 3,
+                   EL_WIDTH * 2,
+                   EL_HEIGHT);
 
-        p.drawRect(TR_X(el_x - EL_WIDTH), rect().bottom() - el_y * (float)floor_height + floor_height - EL_HEIGHT - 3, EL_WIDTH * 2, EL_HEIGHT);
+        QString key = QString::number(el_x) + ":" + QString::number(el_y, 'g', 4);
+        if (counter.contains(key))
+            counter[key] ++;
+        else
+            counter[key] = 1;
     }
+    QMap<QString,int>::iterator it = counter.begin();
+    for(;it != counter.end(); ++it)
+    {
+       if (it.value() > 1){
+           QStringList coords = it.key().split(':');
+
+           int x = TR_X(QString(coords.at(0)).toInt());
+           int y = rect().bottom() - QString(coords.at(1)).toDouble() * (float)floor_height + floor_height/4;
+
+           p.setPen(Qt::gray);
+           p.drawText(x,
+                      y,
+                      QString::number(it.value()));
+       }
+    }
+}
+
+void Visualizer::printScores(QPainter& p){
+    int canvas_center = rect().right() / 2;
+    p.setPen(Qt::white);
+    QJsonObject scores = tick->toObject()["scores"].toObject();
+    int score_pos = config->ladder_position - 200;
+    p.drawText(TR_X(-score_pos), 10, "First Player score: " + QString::number(scores["FIRST_PLAYER"].toInt()));
+    p.drawText(TR_X(score_pos), 10, "Second Player score: " + QString::number(scores["SECOND_PLAYER"].toInt()));
 }
 
 void Visualizer::paintGL()
@@ -71,6 +111,7 @@ void Visualizer::paintGL()
         p.drawText(20, 20, QString::number(this->tick_number));
         this->drawElement(p, "elevators", 32, 0.75f);
         this->drawElement(p, "passengers", 8, 0.6);
+        this->printScores(p);
     }
 }
 
