@@ -1,5 +1,6 @@
 #include "config.h"
 #include "mainwindow.h"
+#include "mytcpsocket.h"
 #include "ui_mainwindow.h"
 #include "visualizer.h"
 #include <QFile>
@@ -12,6 +13,7 @@
 #include <QFileDialog>
 #include <QProgressDialog>
 #include <QMessageBox>
+#include <QProcess>
 
 
 
@@ -24,10 +26,11 @@ MainWindow::MainWindow(QWidget *parent) :
     delete ui->openGLWidget;
     timer = new QTimer();
     connect(timer, SIGNAL(timeout()), this, SLOT(slotTimerAlarm()));
-    filename = "game.js";
+    filename = "://game.js";
     tick_index = 0;
     manualTick = false;
     speed = 1;
+    socket_run = false;
 
     this->preConfig();
 }
@@ -44,6 +47,10 @@ QJsonParseError MainWindow::reparseReplay()
     QFile file(filename);
     file.open(QIODevice::ReadOnly | QIODevice::Text);
     QString gamedump = file.readAll();
+    if (gamedump.startsWith("var data = ")){
+        int leftcut = QString("var data = ").length();
+        gamedump = gamedump.mid(leftcut, gamedump.length() - 1 - leftcut);
+    }
     file.close();
     progress->setValue(75);
     QCoreApplication::processEvents();
@@ -169,4 +176,58 @@ void MainWindow::on_ticksSlider_actionTriggered(int action)
     manualTick = true;
     slotTimerAlarm();
     manualTick = false;
+}
+
+QString runnerPath = "D:\\Temp\\aicups-master\\localrunner\\world";
+QString cmdStrategy1 = "python D:\\repo\\MiniRAIC2017\\python2_client\\run.py";
+QString cmdStrategy2 = "python D:\\repo\\MiniRAIC2017\\bot_01\\run.py";
+
+void MainWindow::on_runGame_clicked()
+{
+    socket_run = true;
+    server = new MyTcpServer(this, this->vis, &this->socket_run);
+
+    QProcess qp;
+    qp.start("python " + ui->runnerPath->toPlainText());
+
+    QProcess qcmd1;
+    qcmd1.start(ui->stratOne->toPlainText());
+    Sleep(1000);
+
+    QProcess qcmd2;
+    qcmd2.start(ui->stratTwo->toPlainText());
+
+    while (socket_run){
+        Sleep(1);
+        QCoreApplication::processEvents();
+    }
+
+    qp.waitForFinished();
+}
+
+void MainWindow::on_browse1_clicked()
+{
+    runnerPath = QFileDialog::getOpenFileName(this,
+            tr("Open run.py"), "",
+            tr("run.py (*py);"));
+
+    this->ui->runnerPath->setText(runnerPath);
+}
+
+void MainWindow::on_browse2_clicked()
+{
+    cmdStrategy1 = QFileDialog::getOpenFileName(this,
+            tr("Open run.py"), "",
+            tr("run.py (*py);"));
+
+    this->ui->stratOne->setText(cmdStrategy1);
+}
+
+void MainWindow::on_browse3_clicked()
+{
+    cmdStrategy2 = QFileDialog::getOpenFileName(this,
+            tr("Open run.py"), "",
+            tr("run.py (*py);"));
+
+    this->ui->stratTwo->setText(cmdStrategy2);
 }

@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "mytcpsocket.h"
 #include "visualizer.h"
 
 #include <QJsonArray>
@@ -40,7 +41,16 @@ private slots:
 
     void on_ticksSlider_actionTriggered(int action);
 
+    void on_runGame_clicked();
+
+    void on_browse1_clicked();
+
+    void on_browse2_clicked();
+
+    void on_browse3_clicked();
+
 private:
+    MyTcpServer * server;
     Ui::MainWindow *ui;
     Visualizer * vis;
     QTimer *timer;
@@ -51,6 +61,9 @@ private:
     QString filename;
     int speed;
     bool manualTick;
+
+public:
+    bool socket_run;
 };
 
 #endif // MAINWINDOW_H
