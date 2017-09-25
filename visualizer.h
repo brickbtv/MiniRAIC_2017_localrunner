@@ -17,6 +17,7 @@ public:
     void setTick(int tick_number, const QJsonValue& tick);
     void drawElement(QPainter& p, QString entity, int width, double height);
     void printScores(QPainter& p);
+    void drawDebug(QPainter& p);
 
     void initializeGL() ;
     void paintGL() ;

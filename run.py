@@ -1,6 +1,7 @@
 # coding=utf-8
 import json
 import os
+import time
 
 from datetime import datetime, timedelta
 import requests
@@ -94,7 +95,7 @@ class WorldHandler(object):
     api = API()
     red_client = None
     blue_client = None
-    ticks_count = int(os.environ.get('TICKS_COUNT', 2000))
+    ticks_count = int(os.environ.get('TICKS_COUNT', 7200))
     result = []
 
     client_player = {}
@@ -137,7 +138,8 @@ class WorldHandler(object):
         f.write(json.dumps(data))
         f.write(";")
         f.close()
-
+        
+        
     @tornado.gen.coroutine
     def start(self):
         self.api.create_players(self.red_client, self.blue_client)
@@ -166,9 +168,10 @@ class WorldHandler(object):
             self.api.apply_commands(red_message, self.red_client)
             self.api.tick()
             data = self.api.get_visio_state()
-            self.result.append(data)
-            sock.send(json.dumps([data,]))
-        sock.send("exit");
+            #self.result.append(data)
+            sock.send("{}$".format(json.dumps([data,])))
+        #time.sleep(10)
+        sock.send("exit")
         try:
             self.write_result({
                 'config': settings.BUILDING_VISIO,

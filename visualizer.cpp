@@ -102,6 +102,31 @@ void Visualizer::printScores(QPainter& p){
     p.drawText(TR_X(score_pos), 10, "Second Player score: " + QString::number(scores["SECOND_PLAYER"].toInt()));
 }
 
+void Visualizer::drawDebug(QPainter& p){
+    int canvas_center = rect().right() / 2;
+    int floor_height = rect().bottom() / this->config->floors_count;
+    QJsonObject debug = tick->toObject()["debug"].toObject();
+    //qDebug() << debug;
+    if (debug.contains("FIRST_PLAYER")){
+         QJsonArray log_ar = debug["FIRST_PLAYER"].toObject()["logs"].toArray();
+         foreach (QJsonValue val, log_ar){
+            QStringList ql = val.toString().split(';');
+            if (ql[0] == "e_mov"){
+                //qDebug() << ql;
+                int eln = QString(ql[1]).toInt();
+                int x = 0;
+                int y1 = QString(ql[2]).toInt();
+                int y2 = QString(ql[3]).toInt();
+
+                x = -(config->elevators_first_pos + config->elevators_offset*((int)(eln/2)));
+
+                p.setPen(Qt::yellow);
+                p.drawLine(TR_X(x), rect().bottom() - y1*floor_height + floor_height / 2, TR_X(x), rect().bottom() - y2*floor_height + floor_height / 2);
+            }
+         }
+    }
+}
+
 void Visualizer::paintGL()
 {
     QPainter p(this);
@@ -112,6 +137,7 @@ void Visualizer::paintGL()
         this->drawElement(p, "elevators", 32, 0.75f);
         this->drawElement(p, "passengers", 8, 0.6);
         this->printScores(p);
+        this->drawDebug(p);
     }
 }
 

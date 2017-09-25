@@ -53,12 +53,17 @@ void MyTcpServer::slotReadClient()
             return;
         }
 
-        //qDebug() << QString(qba);
-        QJsonDocument jsond = QJsonDocument::fromJson(qba);
-        //qDebug() << jsond.array().at(0);
+        QStringList few = QString(qba).split('$');
+        foreach (QString line, few) {
+            if (line.isEmpty())
+                continue;
 
-        vis->setTick(tick_count++, jsond.array().at(0));
-        vis->repaint();
+            QJsonParseError jpe;
+            QJsonDocument jsond = QJsonDocument::fromJson(QByteArray(line.toStdString().c_str()), &jpe);
+
+            vis->setTick(tick_count++, jsond.array().at(0));
+            vis->repaint();
+        }
     }
 
 }

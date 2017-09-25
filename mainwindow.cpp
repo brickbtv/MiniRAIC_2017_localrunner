@@ -26,7 +26,7 @@ MainWindow::MainWindow(QWidget *parent) :
     delete ui->openGLWidget;
     timer = new QTimer();
     connect(timer, SIGNAL(timeout()), this, SLOT(slotTimerAlarm()));
-    filename = "://game.js";
+    filename = ":\\game.js";
     tick_index = 0;
     manualTick = false;
     speed = 1;
