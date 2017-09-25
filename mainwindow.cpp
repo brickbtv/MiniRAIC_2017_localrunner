@@ -32,6 +32,16 @@ MainWindow::MainWindow(QWidget *parent) :
     speed = 1;
     socket_run = false;
 
+    QFile file("Settings.cfg");
+    if (file.exists()){
+        file.open(QIODevice::ReadOnly|QIODevice::Text);
+        QStringList ql = QString(file.readAll()).split(';');
+        ui->runnerPath->setText(ql[0]);
+        ui->stratOne->setText(ql[1]);
+        ui->stratTwo->setText(ql[2]);
+        file.close();
+    }
+
     this->preConfig();
 }
 
@@ -190,6 +200,7 @@ void MainWindow::on_runGame_clicked()
     QProcess qp;
     qp.start("python " + ui->runnerPath->toPlainText());
 
+    Sleep(1000);
     QProcess qcmd1;
     qcmd1.start(ui->stratOne->toPlainText());
     Sleep(1000);
@@ -197,7 +208,14 @@ void MainWindow::on_runGame_clicked()
     QProcess qcmd2;
     qcmd2.start(ui->stratTwo->toPlainText());
 
-    while (socket_run){
+    QFile file("Settings.cfg");
+    file.open(QIODevice::WriteOnly|QIODevice::Text);
+    file.write(QString(ui->runnerPath->toPlainText() + ";").toStdString().c_str());
+    file.write(QString(ui->stratOne->toPlainText() + ";").toStdString().c_str());
+    file.write(QString(ui->stratTwo->toPlainText() + ";").toStdString().c_str());
+    file.close();
+
+    while (true){//socket_run){
         Sleep(1);
         QCoreApplication::processEvents();
     }
