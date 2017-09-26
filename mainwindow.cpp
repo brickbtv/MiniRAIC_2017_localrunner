@@ -194,18 +194,16 @@ QString cmdStrategy2 = "python D:\\repo\\MiniRAIC2017\\bot_01\\run.py";
 
 void MainWindow::on_runGame_clicked()
 {
+    vis->elevators_doors.clear();
+
     socket_run = true;
     server = new MyTcpServer(this, this->vis, &this->socket_run);
 
-    QProcess qp;
-    qp.start("python " + ui->runnerPath->toPlainText());
 
+    qp.start("python " + ui->runnerPath->toPlainText());
     Sleep(1000);
-    QProcess qcmd1;
     qcmd1.start(ui->stratOne->toPlainText());
     Sleep(1000);
-
-    QProcess qcmd2;
     qcmd2.start(ui->stratTwo->toPlainText());
 
     QFile file("Settings.cfg");
@@ -221,6 +219,13 @@ void MainWindow::on_runGame_clicked()
     }
 
     qp.waitForFinished();
+}
+
+void MainWindow::on_stopServer_clicked()
+{
+    qp.kill();
+    qcmd1.kill();
+    qcmd2.kill();
 }
 
 void MainWindow::on_browse1_clicked()
@@ -249,3 +254,4 @@ void MainWindow::on_browse3_clicked()
 
     this->ui->stratTwo->setText(cmdStrategy2);
 }
+

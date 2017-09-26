@@ -54,6 +54,7 @@ void Visualizer::drawElement(QPainter& p, QString entity, int width, double heig
 
     QJsonArray elevators = tick->toObject()[entity].toArray();
     QMap<QString, int> counter;
+    int elev_iter = 0;
     foreach(const QJsonValue & element, elevators){
         int el_x = element.toObject()["x"].toInt();
         double el_y = element.toObject()["y"].toDouble();
@@ -75,7 +76,39 @@ void Visualizer::drawElement(QPainter& p, QString entity, int width, double heig
             counter[key] ++;
         else
             counter[key] = 1;
+
+        // Elevator doors
+        if (entity == "elevators"){
+            QString elev_id = QString::number(el_x);
+            if (elevators_doors.contains(elev_id)) {
+                if (el_state == 4){
+                    elevators_doors[elev_id] ++;
+                    elevators_doors[elev_id] > 100?elevators_doors[elev_id]=100:0;
+                } else if (el_state == 2){
+                    elevators_doors[elev_id] --;
+                    elevators_doors[elev_id] < 0?elevators_doors[elev_id]=0:0;
+                } else if (el_state == 1)
+                    elevators_doors[elev_id] = 100;
+                else if (el_state == 3 || el_state == 0)
+                    elevators_doors[elev_id] = 0;
+
+                QBrush tbrush = p.brush();
+                p.setBrush(Qt::yellow);
+                p.drawRect(TR_X(el_x - EL_WIDTH),
+                           rect().bottom() - el_y * (float)floor_height + floor_height - EL_HEIGHT - 3,
+                           EL_WIDTH * 2 * (elevators_doors[elev_id])/100,
+                           EL_HEIGHT);
+                p.setBrush(tbrush);
+            } else {
+                elevators_doors.insert(elev_id, 0);
+            }
+            elev_iter++;
+        }
     }
+
+    //if (entity == "elevators")
+    //    qDebug() << elevators_doors;
+
     QMap<QString,int>::iterator it = counter.begin();
     for(;it != counter.end(); ++it)
     {
@@ -121,7 +154,26 @@ void Visualizer::drawDebug(QPainter& p){
                 x = -(config->elevators_first_pos + config->elevators_offset*((int)(eln/2)));
 
                 p.setPen(Qt::yellow);
-                p.drawLine(TR_X(x), rect().bottom() - y1*floor_height + floor_height / 2, TR_X(x), rect().bottom() - y2*floor_height + floor_height / 2);
+                int st_y = rect().bottom() - y1*floor_height + floor_height / 2;
+                int en_y = rect().bottom() - y2*floor_height + floor_height / 2;
+                p.drawLine(TR_X(x), st_y, TR_X(x), en_y);
+                p.drawLine(TR_X(x-3), st_y - 3, TR_X(x+3), st_y + 3);
+                p.drawLine(TR_X(x-3), st_y + 3, TR_X(x+3), st_y - 3);
+                p.drawEllipse(QPoint(TR_X(x), en_y), 4, 4);
+            }
+            if (ql[0] == "f_pot"){
+                //qDebug() << ql;
+                int eln = QString(ql[1]).toInt();
+                QStringList potential = QString(ql[2]).split(',');
+                int x = -(config->elevators_first_pos + config->elevators_offset*((int)(eln/2)));
+
+                p.setPen(Qt::yellow);
+                int i = 1;
+                foreach(QString pot, potential){
+                    int y = rect().bottom() - i*floor_height + floor_height / 2;
+                    p.drawText(TR_X(x + 15), y, pot);
+                    i++;
+                }
             }
          }
     }

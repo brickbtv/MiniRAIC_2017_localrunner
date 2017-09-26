@@ -3,6 +3,7 @@
 
 #include "config.h"
 
+#include <QMap>
 #include <QOpenGLWidget>
 
 class Visualizer : public QOpenGLWidget
@@ -11,6 +12,8 @@ class Visualizer : public QOpenGLWidget
     QJsonValue * tick;
     int tick_number;
 public:
+    QMap<QString, int> elevators_doors;
+
     Visualizer(QWidget* parent);
     void setConfig(Config * config);
     void drawBackground(QPainter& p);

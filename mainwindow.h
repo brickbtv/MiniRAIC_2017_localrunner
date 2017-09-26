@@ -7,6 +7,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QMainWindow>
+#include <QProcess>
 #include <QTimer>
 
 namespace Ui {
@@ -49,7 +50,12 @@ private slots:
 
     void on_browse3_clicked();
 
+    void on_stopServer_clicked();
+
 private:
+    QProcess qp;
+    QProcess qcmd1;
+    QProcess qcmd2;
     MyTcpServer * server;
     Ui::MainWindow *ui;
     Visualizer * vis;
